@@ -1,0 +1,411 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Donation</title>
+    <link href="Styles/MobileAppStyle.css" rel="stylesheet" type="text/css" />
+    <!--<script src="JS/jquery-1.4.2.min.js" type="text/javascript"></script>-->
+    <script src="js/jquery-1.8.3.js" type="text/javascript"></script>
+    <script type="text/javascript" src="js/jquery.Storage.js"></script>
+    <!-- toggle menu -->
+    <script type="text/javascript">
+        $(function () {
+            // run the currently selected effect
+            function runEffect() {
+                // get effect type from
+                var selectedEffect = $("#effectTypes").val();
+
+                // most effect types need no options passed by default
+                var options = {};
+                // some effects have required parameters
+                if (selectedEffect === "scale") {
+                    options = { percent: 0 };
+                } else if (selectedEffect === "size") {
+                    options = { to: { width: 200, height: 60 } };
+                }
+                // run the effect
+                $("#effect").toggle("slow");
+            };
+
+            // set effect from select menu value
+            $("#button").click(function () {
+                runEffect();
+                return false;
+            });
+        });
+    </script>
+    <script type="text/javascript">
+       
+
+        function LoginBusinessAdmin() {
+            //alert("admin enter");
+            $.ajax({
+                type: "POST",
+                url: 'http://mobile.intouchcommunicator.com/WebService.asmx/MobileAppGetSchoolByEmailPassword',
+                // url: "http://projectxmobile.2bvision.com/webservice.asmx/MobileAppGetSchoolByEmailPassword",
+                //url: "Webservice.asmx/MobileAppGetSchoolByEmailPassword",
+                data: "{'email': '" + window.localStorage["username"] + "','password':'" + window.localStorage["password"] + "'}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    if (response.d != null && response.d != "") {
+                        var prods = response.d;
+                        for (var i = 0; i < prods.length; i++) {
+                            var SchoolId = getUrlVars()["value"];
+                            if(prods[i].SchoolId==SchoolId)
+                            {
+                               
+                                $.ajax({
+                                    url: 'http://mobile.intouchcommunicator.com/WebService.asmx/InsertPledgeInfo',
+                                    //url: 'http://projectxmobile.2bvision.com/WebService.asmx/GetSchoolUserBySchoolUserId',
+                                    //url: 'WebService.asmx/GetSchoolUserBySchoolUserId',
+                                    type: 'POST',
+                                    data: "{'Name': '" + prods[i].SchoolName + "', 'Address': '" + prods[i].SchoolAddress + "', 'Phone': '" + prods[i].SchoolPhoneNumber + "', 'Ammount': '" + $('#txtAmmount').val() + "', 'SchoolId': '" + SchoolId + "'}",
+                                    contentType: "application/json; charset=utf-8",
+                                    dataType: "json",
+                                    success: function (response) {
+                                        
+                                       
+                                        alert("Pledge Donated Successfully");
+                                    },
+                                    failure: function (errMsg) {
+                                        $('#errorMessage').text(errMsg); //errorMessage is id of the div
+                                    }
+                                });
+                            }
+                        }
+                    }
+                },
+                error: function (e) {
+                    if (flag4 == "false") {
+                        flag4 = "true";
+                    }
+                }
+            });
+
+            
+        }
+
+
+        function GetMyDetails() {
+           // alert("yes");
+            var schooluserid = getUrlVars()["userId"];
+            $.ajax({
+                url: 'http://mobile.intouchcommunicator.com/WebService.asmx/GetSchoolUserBySchoolUserId',
+                //url: 'http://projectxmobile.2bvision.com/WebService.asmx/GetSchoolUserBySchoolUserId',
+                //url: 'WebService.asmx/GetSchoolUserBySchoolUserId',
+                type: 'POST',
+                data: "{'SchoolUserId': '" + schooluserid + "'}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    var Kewords = {};
+                    Kewords = response.d;
+                    for (i = 0; i < Kewords.length; i++) {
+                        var SchoolId = getUrlVars()["value"];
+                       // alert("for");
+                       // alert(Kewords[i].FirstName);
+                        $.ajax({
+                            url: 'http://mobile.intouchcommunicator.com/WebService.asmx/InsertPledgeInfo',
+                            //url: 'http://projectxmobile.2bvision.com/WebService.asmx/GetSchoolUserBySchoolUserId',
+                            //url: 'WebService.asmx/GetSchoolUserBySchoolUserId',
+                            type: 'POST',
+                            data: "{'Name': '" + Kewords[i].FirstName + "', 'Address': '" + Kewords[i].Address + "', 'Phone': '" + Kewords[i].Phone + "', 'Ammount': '" + $('#txtAmmount').val() + "', 'SchoolId': '" + SchoolId + "'}",
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            success: function (response) {
+                                alert("Pledge Donated Successfully");
+                               
+                            },
+                            failure: function (errMsg) {
+                                alert("error");
+                            }
+                        });
+                    }
+                },
+                failure: function (errMsg) {
+                    $('#errorMessage').text(errMsg); //errorMessage is id of the div
+                }
+            });
+        }
+
+        function getUrlVars() {
+            var vars = [], hash;
+            var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            for (var i = 0; i < hashes.length; i++) {
+                hash = hashes[i].split('=');
+                vars.push(hash[0]);
+                vars[hash[0]] = hash[1];
+            }
+            return vars;
+        }
+
+        function assignLinks() {
+            var schoolId = getUrlVars()["value"];
+            var schooluserid = getUrlVars()["userId"];
+            if (schooluserid == "undefined") {
+                schooluserid = "0";
+            }
+            var username = getUrlVars()["username"];
+            $("#lnkAtAGlance").attr("href", "ataglance.html?value=" + schoolId + "&userId=" + schooluserid + "&username=" + username + "");
+            $("#lnkNews").attr("href", "news.html?value=" + schoolId + "&userId=" + schooluserid + "&username=" + username + "");
+            $("#lnkCalender").attr("href", "calendar.html?value=" + schoolId + "&userId=" + schooluserid + "&username=" + username + "");
+            $("#lnkContacts").attr("href", "contacts.html?value=" + schoolId + "&userId=" + schooluserid + "&username=" + username + "");
+            $("#lnkGallery").attr("href", "gallery.html?value=" + schoolId + "&userId=" + schooluserid + "&username=" + username + "");
+            $("#lnkMyDetail").attr("href", "mydetail.html?value=" + schoolId + "&userId=" + schooluserid + "&username=" + username + "");
+            $("#lnkPersonalize").attr("href", "personalize.html?value=" + schoolId + "&userId=" + schooluserid + "&username=" + username + "");
+            $("#lnkResources").attr("href", "resources.html?value=" + schoolId + "&userId=" + schooluserid + "&username=" + username + "");
+            $("#lnkShare").attr("href", "share.html?value=" + schoolId + "&userId=" + schooluserid + "&username=" + username + "");
+            $("#lnkChangeSchool").attr("href", "changeschool.html?value=" + schoolId + "&userId=" + schooluserid + "&username=" + username + "");
+            $("#lnkUserPledges").attr("href", "UserPledges.html?value=" + schoolId + "&userId=" + schooluserid + "&username=" + username + "");
+            $("#lnkLogout").click(function () {
+                //alert("yes");
+                localStorage.clear();
+            })
+            $("#lnkLogout").attr("href", "index.html");
+        }
+
+        function GetUsername() {
+            var usernamewithoutspace = getUrlVars()["username"];
+            var username = usernamewithoutspace.replace("%20", " ");
+            $("#divUsername").append("" + username + "");
+        }
+        function SavePledge()
+        {
+            if ($('#rbMyinfo').is(':checked'))
+            {
+                LoginBusinessAdmin();
+                GetMyDetails();
+                
+
+            }
+            else
+            {
+                SaveDonation();
+            }
+            document.getElementById('txtAmmount').value = "";
+            document.getElementById('txtFirstName').value = "";
+            document.getElementById('txtAddress').value = "";
+            document.getElementById('txtPhone').value = "";
+        }
+
+        function SaveDonation() {
+            var SchoolId = getUrlVars()["value"];
+            $.ajax({
+                url: 'http://mobile.intouchcommunicator.com/WebService.asmx/InsertPledgeInfo',
+                //url: 'http://projectxmobile.2bvision.com/WebService.asmx/GetSchoolUserBySchoolUserId',
+                //url: 'WebService.asmx/GetSchoolUserBySchoolUserId',
+                type: 'POST',
+                data: "{'Name': '" + $('#txtFirstName').val() + "', 'Address': '" + $('#txtAddress').val() + "', 'Phone': '" + $('#txtPhone').val() + "', 'Ammount': '" + $('#txtAmmount').val() + "', 'SchoolId': '" + SchoolId + "'}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                   
+                  
+
+                    alert("Pledge Donated Successfully");
+                },
+                failure: function (errMsg) {
+                    $('#errorMessage').text(errMsg); //errorMessage is id of the div
+                }
+            });
+
+
+        }
+        var querystring = getUrlVars()["value"];
+        Paramdata = { "SchoolId": querystring }
+        function GetSchoolInfo() {
+            $.ajax({
+                url: 'http://mobile.intouchcommunicator.com/WebService.asmx/GetSchool_SchoolIdWise',
+                // url: 'http://projectxmobile.2bvision.com/WebService.asmx/GetSchool_SchoolIdWise',
+                //url: 'WebService.asmx/GetSchool_SchoolIdWise',
+                type: 'POST',
+                data: JSON.stringify(Paramdata),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    var Kewords = {};
+                    Kewords = response.d;
+                    //document.getElementById("imgSchoolLogo").src = "http://projectX.2bvision.com/projectx/superadmin/SchoolLogo/" + Kewords.SchoolLogo;
+                    document.getElementById("divTagLine").innerHTML = "<b>" + Kewords.SchoolName + "</b>";
+                },
+                failure: function (errMsg) {
+                    $('#errorMessage').text(errMsg); //errorMessage is id of the div
+                }
+            });
+        }
+
+
+        $(document).ready(function () {
+           
+            
+            $("#rbMyinfo").click(function () {
+                $("#UserInfo").css("display", "none");
+            });
+            $("#rbNewInfo").click(function () {
+                $("#UserInfo").css("display", "block");
+            });
+           
+               
+            assignLinks();
+            GetUsername();
+            GetSchoolInfo();
+        });
+    </script>
+
+</head>
+<body>
+    <div class="container">
+        <div class="heaser">
+            <ul class="ulHeader">
+                <li>
+                    <a id="lnkLogout">
+                        <div class="logout-btn">
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a id="lnkChangeSchool">
+                        <div class="change-school-btn">
+                        </div>
+                    </a>
+                </li>
+            </ul>
+            <div class="user-name" id="divUsername">
+                Welcome :
+            </div>
+        </div>
+        <a href="#" id="button">
+            <div class="menu-btn">
+            </div>
+        </a>
+        <div class="School-name" id="divTagLine">
+        </div>
+        <div class="nav" id="effect" style="display:none;">
+            <ul class="main-nav">
+                <li>
+                    <a id="lnkAtAGlance">
+                        <img src="images/at-a-glane.png" width="35" height="30" alt="" />
+                        <p class="marginP">
+                            At a Glance
+                        </p>
+                    </a>
+                </li>
+                <li>
+                    <a id="lnkNews">
+                        <img src="images/nes-icon.png" width="35" height="30" alt="" />
+                        <p class="marginP">
+                            News
+                        </p>
+                    </a>
+                </li>
+                <li>
+                    <a id="lnkCalender">
+                        <img src="images/calande-icon.png" width="35" height="30" alt="" />
+                        <p class="marginP">
+                            Calender
+                        </p>
+                    </a>
+                </li>
+                <li>
+                    <a id="lnkGallery">
+                        <img src="images/gallery-icon.png" width="35" height="30" alt="" />
+                        <p class="marginP">
+                            Gallery
+                        </p>
+                    </a>
+                </li>
+                <li>
+                    <a id="lnkContacts">
+                        <img src="images/contacts-icon.png" width="35" height="30" alt="" />
+                        <p class="marginP">
+                            Contacts
+                        </p>
+                    </a>
+                </li>
+                <li>
+                    <a id="lnkResources">
+                        <img src="images/resources-icon.png" width="35" height="30" alt="" />
+                        <p class="marginP">
+                            Resources
+                        </p>
+                    </a>
+                </li>
+                <li>
+                    <a id="lnkMyDetail" class="active">
+                        <img src="images/my-detail-icon.png" width="35" height="30" alt="" />
+                        <p class="marginP">
+                            My detail
+                        </p>
+                    </a>
+                </li>
+                <li>
+                    <a id="lnkShare">
+                        <img src="images/Share-icon.png" width="35" height="30" alt="" />
+                        <p class="marginP">
+                            Share
+                        </p>
+                    </a>
+                </li>
+                <li>
+                    <a id="lnkPersonalize">
+                        <img src="images/personalize-icon.png" width="35" height="30" alt="" />
+                        <p class="marginP">
+                            Personalize
+                        </p>
+                    </a>
+                </li>
+                <li>
+                    <a id="lnkUserPledges">
+                        <img src="images/personalize-icon.png" width="35" height="30" alt="" />
+                        <p class="marginP">
+                            Donation
+                        </p>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="detail-area">
+            <center>
+                <h3 style="margin: 10px auto 0 auto;color:#cc0000;">
+                    Donation
+                </h3>
+            </center>
+            
+            <input type="radio" name="sex" value="1" id="rbMyinfo" checked="checked"/>Use My Detail<br>
+            <input type="radio" name="sex" value="2" id="rbNewInfo">Enter New Pledge Information
+            </div>
+        <div id="UserInfo" style="display:none">
+           
+                        <div class="formSet clearfix">
+                            <label>
+                                First Name
+                            </label>
+                            <input type="text" id="txtFirstName"></input>
+                        </div>
+                        <div class="formSet clearfix">
+                            <label>
+                                Phone
+                            </label>
+                            <input type="text" id="txtPhone"></input>
+                        </div>
+                        <div class="formSet clearfix">
+                            <label>
+                                Address
+                            </label>
+                            <input type="text" id="txtAddress"></input>
+                        </div>
+
+                    </div>
+                
+        <div class="formSet clearfix">
+            <label>
+                Ammount
+            </label>
+            <input type="text" id="txtAmmount"></input>
+        </div>
+        <div class="formSet clearfix" style="margin-left: 95px">
+            <input type="submit" id="imbSavePledge" value="Submit" onclick="SavePledge()" />
+        </div>
+        </div>
+</body>
+</html>
